@@ -2,6 +2,7 @@ package news.agoda.com.sample;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,25 +22,31 @@ public class NewsListAdapter extends ArrayAdapter {
         DraweeView imageView;
     }
 
-    public NewsListAdapter(Context context, int resource, List objects) {
+    NewsListAdapter(Context context, int resource, List objects) {
         super(context, resource, objects);
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         NewsEntity newsEntity = (NewsEntity) getItem(position);
-        List<MediaEntity> mediaEntityList = newsEntity.getMediaEntity();
+        if(newsEntity == null)
+            return convertView;
+
+        List<MediaEntity> mediaEntityList = newsEntity.getMultimedia();
         String thumbnailURL = "";
-        MediaEntity mediaEntity = mediaEntityList.get(0);
-        thumbnailURL = mediaEntity.getUrl();
+        if (!mediaEntityList.isEmpty()) {
+            MediaEntity mediaEntity = mediaEntityList.get(0);
+            thumbnailURL = mediaEntity.getUrl();
+        }
 
         ViewHolder viewHolder;
         if (convertView == null) {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(R.layout.list_item_news, parent, false);
-            viewHolder.newsTitle = (TextView) convertView.findViewById(R.id.news_title);
-            viewHolder.imageView = (DraweeView) convertView.findViewById(R.id.news_item_image);
+            viewHolder.newsTitle = convertView.findViewById(R.id.news_title);
+            viewHolder.imageView = convertView.findViewById(R.id.news_item_image);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();

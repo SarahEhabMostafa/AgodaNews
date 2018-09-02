@@ -1,22 +1,19 @@
 package news.agoda.com.sample;
 
-import com.facebook.drawee.backends.pipeline.Fresco;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,9 +24,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity
-        extends ListActivity
-        implements Callback {
+import news.agoda.com.sample.utils.Constants;
+
+public class MainActivity extends ListActivity implements Callback {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private List<NewsEntity> newsItemList;
@@ -85,7 +82,7 @@ public class MainActivity
 
     private static String readStream(InputStream in) {
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in));) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 
             String nextLine = "";
             while ((nextLine = reader.readLine()) != null) {
@@ -100,20 +97,32 @@ public class MainActivity
     @Override public void onResult(final String data) {
         handler.postDelayed(new Runnable() {
             @Override public void run() {
-                JSONObject jsonObject;
 
-                try {
-                    jsonObject = new JSONObject(data);
-                    JSONArray resultArray = jsonObject.getJSONArray("results");
-                    for (int i = 0; i < resultArray.length(); i++) {
-                        JSONObject newsObject = resultArray.getJSONObject(i);
-                        NewsEntity newsEntity = new NewsEntity(newsObject);
-                        newsItemList.add(newsEntity);
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG, "fail to parse json string");
-                }
+                String updatedData = data;
+                updatedData = updatedData.replaceAll("\"des_facet\":\"\"", "\"des_facet\":[]")
+                .replaceAll("\"org_facet\":\"\"", "\"org_facet\":[]")
+                .replaceAll("\"per_facet\":\"\"", "\"per_facet\":[]")
+                .replaceAll("\"geo_facet\":\"\"", "\"geo_facet\":[]")
+                .replaceAll("\"multimedia\":\"\"", "\"multimedia\":[]")
+                .replaceAll("\"abstract\":", "\"summary\":");
 
+                Gson gson = new Gson();
+                ParentEntity parentEntity = gson.fromJson(updatedData, new TypeToken<ParentEntity>(){}.getType());
+//                JSONObject jsonObject;
+//
+//                try {
+//                    jsonObject = new JSONObject(data);
+//                    JSONArray resultArray = jsonObject.getJSONArray("results");
+//                    for (int i = 0; i < resultArray.length(); i++) {
+//                        JSONObject newsObject = resultArray.getJSONObject(i);
+//                        NewsEntity newsEntity = new NewsEntity(newsObject);
+//                        newsItemList.add(newsEntity);
+//                    }
+//                } catch (JSONException e) {
+//                    Log.e(TAG, "fail to parse json string");
+//                }
+
+                newsItemList = parentEntity.getResults();
                 NewsListAdapter adapter = new NewsListAdapter(MainActivity.this, R.layout.list_item_news, newsItemList);
                 setListAdapter(adapter);
 
@@ -124,8 +133,18 @@ public class MainActivity
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         NewsEntity newsEntity = newsItemList.get(position);
                         String title = newsEntity.getTitle();
+                        String storyURL = newsEntity.getUrl();
+                        String summary = newsEntity.getSummary();
+                        String imageURL = "";
+                        if (!newsEntity.getMultimedia().isEmpty()) {
+                            MediaEntity mediaEntity = newsEntity.getMultimedia().get(0);
+                            imageURL = mediaEntity.getUrl();
+                        }
                         Intent intent = new Intent(MainActivity.this, DetailViewActivity.class);
-                        intent.putExtra("title", title);
+                        intent.putExtra(Constants.KEY_TITLE, title);
+                        intent.putExtra(Constants.KEY_STORY_URL, storyURL);
+                        intent.putExtra(Constants.KEY_SUMMARY, summary);
+                        intent.putExtra(Constants.KEY_IMAGE_URL, imageURL);
                         startActivity(intent);
                     }
                 });

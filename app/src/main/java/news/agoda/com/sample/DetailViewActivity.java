@@ -12,6 +12,8 @@ import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.DraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
 
+import news.agoda.com.sample.utils.Constants;
+
 /**
  * News detail view
  */
@@ -24,14 +26,14 @@ public class DetailViewActivity extends Activity {
         setContentView(R.layout.activity_detail);
 
         Bundle extras = getIntent().getExtras();
-        storyURL = extras.getString("storyURL");
-        String title = extras.getString("title");
-        String summary = extras.getString("summary");
-        String imageURL = extras.getString("imageURL");
+        storyURL = extras.getString(Constants.KEY_STORY_URL);
+        String title = extras.getString(Constants.KEY_TITLE);
+        String summary = extras.getString(Constants.KEY_SUMMARY);
+        String imageURL = extras.getString(Constants.KEY_IMAGE_URL);
 
-        TextView titleView = (TextView) findViewById(R.id.title);
-        DraweeView imageView = (DraweeView) findViewById(R.id.news_image);
-        TextView summaryView = (TextView) findViewById(R.id.summary_content);
+        TextView titleView = findViewById(R.id.title);
+        DraweeView imageView = findViewById(R.id.news_image);
+        TextView summaryView = findViewById(R.id.summary_content);
 
         titleView.setText(title);
         summaryView.setText(summary);
