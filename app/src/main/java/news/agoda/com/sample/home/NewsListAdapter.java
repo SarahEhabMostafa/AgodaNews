@@ -1,4 +1,4 @@
-package news.agoda.com.sample;
+package news.agoda.com.sample.home;
 
 import android.content.Context;
 import android.net.Uri;
@@ -15,6 +15,10 @@ import com.facebook.drawee.view.DraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
 
 import java.util.List;
+
+import news.agoda.com.sample.data.MediaEntity;
+import news.agoda.com.sample.data.NewsEntity;
+import news.agoda.com.sample.R;
 
 public class NewsListAdapter extends ArrayAdapter {
     private static class ViewHolder {

@@ -1,4 +1,4 @@
-package news.agoda.com.sample;
+package news.agoda.com.sample.data;
 
 import java.util.List;
 
