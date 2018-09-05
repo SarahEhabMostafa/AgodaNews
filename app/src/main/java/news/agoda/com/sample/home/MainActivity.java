@@ -16,7 +16,6 @@ public class MainActivity extends FragmentActivity
         implements ListFragment.OnItemClickListener, DetailFragment.OnButtonClick {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private DetailFragment detailFragment = new DetailFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +72,7 @@ public class MainActivity extends FragmentActivity
         args.putString(Constants.KEY_SUMMARY, summary);
         args.putString(Constants.KEY_IMAGE_URL, imageURL);
 
+        DetailFragment detailFragment = new DetailFragment();
         detailFragment.setArguments(args);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -81,7 +81,7 @@ public class MainActivity extends FragmentActivity
             transaction.replace(R.id.fragment_container_detail, detailFragment);
         } else {
             transaction.replace(R.id.fragment_container, detailFragment);
-            transaction.addToBackStack(Constants.FRAGMENT_DETAILS);
+            transaction.addToBackStack(null);
         }
 
         transaction.commit();
