@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import news.agoda.com.sample.R;
 import news.agoda.com.sample.data.MediaEntity;
@@ -34,7 +36,7 @@ public class MainActivity extends FragmentActivity
         }
     }
 
-    /*@Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -49,12 +51,23 @@ public class MainActivity extends FragmentActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_refresh) {
+            ListFragment listFragment = new ListFragment();
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, listFragment).commit();
+
+            if (findViewById(R.id.fragment_container_detail) != null
+                    && getSupportFragmentManager().getFragments().size() > 1) {
+                getSupportFragmentManager().beginTransaction()
+                        .remove(getSupportFragmentManager().getFragments().get(1))
+                        .commit();
+            }
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }*/
+    }
 
     @Override
     public void onItemClick(NewsEntity newsEntity) {
