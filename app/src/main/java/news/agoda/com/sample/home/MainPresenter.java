@@ -2,6 +2,7 @@ package news.agoda.com.sample.home;
 
 import android.support.annotation.NonNull;
 
+import news.agoda.com.sample.R;
 import news.agoda.com.sample.data.ParentEntity;
 
 public class MainPresenter implements MainContract {
@@ -20,8 +21,14 @@ public class MainPresenter implements MainContract {
 
     @Override
     public void onSuccess(ParentEntity parentEntity) {
-        presenterListener.hideProgress();
-        presenterListener.displayNewsList(parentEntity.getResults());
+        if(parentEntity.getResults() != null && !parentEntity.getResults().isEmpty()) {
+            presenterListener.hideProgress();
+            presenterListener.displayNewsList(parentEntity.getResults());
+        } else {
+            presenterListener.hideList();
+            presenterListener.hideProgress();
+            presenterListener.showError(R.string.empty_list);
+        }
     }
 
     @Override

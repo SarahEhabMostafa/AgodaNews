@@ -1,6 +1,5 @@
 package news.agoda.com.sample.home;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -30,7 +30,8 @@ import news.agoda.com.sample.utils.Constants;
  */
 public class ListFragment extends Fragment implements MainPresenterListener {
     private ListView listView;
-    private ProgressDialog progressDialog;
+    private ProgressBar progressBar;
+    private TextView textView;
 
     private MainPresenter mainPresenter;
     private List<NewsEntity> newsEntityList = new ArrayList<>();
@@ -42,13 +43,15 @@ public class ListFragment extends Fragment implements MainPresenterListener {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
 
         listView = rootView.findViewById(android.R.id.list);
+        progressBar = rootView.findViewById(R.id.progressBar);
+        textView = rootView.findViewById(R.id.textView);
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -71,9 +74,6 @@ public class ListFragment extends Fragment implements MainPresenterListener {
             adapter = new NewsListAdapter(getActivity(), R.layout.list_item_news, newsEntityList);
             listView.setAdapter(adapter);
         } else {
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage(getString(R.string.loading));
-
             mainPresenter = new MainPresenter(this);
             mainPresenter.loadNews();
         }
@@ -105,6 +105,7 @@ public class ListFragment extends Fragment implements MainPresenterListener {
 
     @Override
     public void displayNewsList(final List<NewsEntity> list) {
+        listView.setVisibility(View.VISIBLE);
         this.newsEntityList = list;
         adapter = new NewsListAdapter(getActivity(), R.layout.list_item_news, newsEntityList);
         listView.setAdapter(adapter);
@@ -112,25 +113,22 @@ public class ListFragment extends Fragment implements MainPresenterListener {
 
     @Override
     public void hideList() {
-        TextView textView = new TextView(getActivity());
-        textView.setText(R.string.empty_list);
-        listView.setEmptyView(textView);
+        listView.setVisibility(View.GONE);
     }
 
     @Override
     public void showProgress() {
-        progressDialog.show();
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideProgress() {
-        if (progressDialog.isShowing())
-            progressDialog.hide();
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void showError(String errorMessage) {
-        TextView textView = new TextView(getActivity());
+        textView.setVisibility(View.VISIBLE);
         textView.setText(errorMessage);
         listView.setEmptyView(textView);
     }
@@ -140,8 +138,6 @@ public class ListFragment extends Fragment implements MainPresenterListener {
         showError(getString(errorResId));
     }
 
-
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         String jsonList = new Gson().toJson(newsEntityList,
@@ -150,18 +146,4 @@ public class ListFragment extends Fragment implements MainPresenterListener {
 
         super.onSaveInstanceState(outState);
     }
-
-//    @Override
-//    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-//        super.onActivityCreated(savedInstanceState);
-//
-//        if (savedInstanceState != null) {
-//            String newsJson = savedInstanceState.getString(Constants.EXTRA_NEWS);
-//            newsEntityList = new Gson().fromJson(newsJson,
-//                    new TypeToken<ArrayList<NewsEntity>>(){}.getType());
-//
-//            NewsListAdapter adapter = new NewsListAdapter(getActivity(), R.layout.list_item_news, newsEntityList);
-//            listView.setAdapter(adapter);
-//        }
-//    }
 }
