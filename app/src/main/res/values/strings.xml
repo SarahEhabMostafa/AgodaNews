@@ -1,8 +1,14 @@
 <resources>
-    <string name="app_name">TechNewsSample</string>
+    <string name="app_name">Tech News</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="error">Unknown error!</string>
     <string name="empty_list">No news available right now</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="full_story">Full Story</string>
+    <string name="loading">Loading</string>
+    <string name="title_news_list">NewsList</string>
+    <string name="title_news_detail">News Detail</string>
 </resources>

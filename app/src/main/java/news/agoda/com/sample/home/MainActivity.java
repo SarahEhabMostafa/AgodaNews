@@ -1,47 +1,41 @@
 package news.agoda.com.sample.home;
 
-import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import com.facebook.drawee.backends.pipeline.Fresco;
-
-import java.util.List;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 
 import news.agoda.com.sample.R;
 import news.agoda.com.sample.data.MediaEntity;
 import news.agoda.com.sample.data.NewsEntity;
-import news.agoda.com.sample.details.DetailViewActivity;
+import news.agoda.com.sample.details.DetailFragment;
 import news.agoda.com.sample.utils.Constants;
 
-public class MainActivity extends ListActivity implements /*Callback,*/ MainPresenterListener {
+public class MainActivity extends FragmentActivity
+        implements ListFragment.OnItemClickListener, DetailFragment.OnButtonClick {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private ProgressDialog progressDialog;
-
-    private MainPresenter mainPresenter;
+    private DetailFragment detailFragment = new DetailFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Fresco.initialize(this);
 
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Loading");
+        if (findViewById(R.id.fragment_container) != null) {
+            if (savedInstanceState != null) {
+                return;
+            }
 
-        mainPresenter = new MainPresenter(this);
-        mainPresenter.loadNews();
+            ListFragment listFragment = new ListFragment();
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, listFragment).commit();
+        }
     }
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -61,65 +55,42 @@ public class MainActivity extends ListActivity implements /*Callback,*/ MainPres
         }
 
         return super.onOptionsItemSelected(item);
+    }*/
+
+    @Override
+    public void onItemClick(NewsEntity newsEntity) {
+        String title = newsEntity.getTitle();
+        String storyURL = newsEntity.getUrl();
+        String summary = newsEntity.getSummary();
+        String imageURL = "";
+        if (!newsEntity.getMultimedia().isEmpty()) {
+            MediaEntity mediaEntity = newsEntity.getMultimedia().get(0);
+            imageURL = mediaEntity.getUrl();
+        }
+        Bundle args = new Bundle();
+        args.putString(Constants.KEY_TITLE, title);
+        args.putString(Constants.KEY_STORY_URL, storyURL);
+        args.putString(Constants.KEY_SUMMARY, summary);
+        args.putString(Constants.KEY_IMAGE_URL, imageURL);
+
+        detailFragment.setArguments(args);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        if(findViewById(R.id.fragment_container_detail) != null) {
+            transaction.replace(R.id.fragment_container_detail, detailFragment);
+        } else {
+            transaction.replace(R.id.fragment_container, detailFragment);
+            transaction.addToBackStack(Constants.FRAGMENT_DETAILS);
+        }
+
+        transaction.commit();
     }
 
     @Override
-    public void displayNewsList(final List<NewsEntity> newsEntityList) {
-        NewsListAdapter adapter = new NewsListAdapter(MainActivity.this, R.layout.list_item_news, newsEntityList);
-        setListAdapter(adapter);
-
-        ListView listView = getListView();
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                NewsEntity newsEntity = newsEntityList.get(position);
-                String title = newsEntity.getTitle();
-                String storyURL = newsEntity.getUrl();
-                String summary = newsEntity.getSummary();
-                String imageURL = "";
-                if (!newsEntity.getMultimedia().isEmpty()) {
-                    MediaEntity mediaEntity = newsEntity.getMultimedia().get(0);
-                    imageURL = mediaEntity.getUrl();
-                }
-                Intent intent = new Intent(MainActivity.this, DetailViewActivity.class);
-                intent.putExtra(Constants.KEY_TITLE, title);
-                intent.putExtra(Constants.KEY_STORY_URL, storyURL);
-                intent.putExtra(Constants.KEY_SUMMARY, summary);
-                intent.putExtra(Constants.KEY_IMAGE_URL, imageURL);
-                startActivity(intent);
-            }
-        });
-    }
-
-    @Override
-    public void hideList() {
-        ListView listView = getListView();
-        TextView textView = new TextView(this);
-        textView.setText(R.string.empty_list);
-        listView.setEmptyView(textView);
-    }
-
-    @Override
-    public void showProgress() {
-        progressDialog.show();
-    }
-
-    @Override
-    public void hideProgress() {
-        if(progressDialog.isShowing())
-            progressDialog.hide();
-    }
-
-    @Override
-    public void showError(String errorMessage) {
-        ListView listView = getListView();
-        TextView textView = new TextView(this);
-        textView.setText(errorMessage);
-        listView.setEmptyView(textView);
-    }
-
-    @Override
-    public void showError(int errorResId) {
-        showError(getString(errorResId));
+    public void onButtonClick(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        startActivity(intent);
     }
 }

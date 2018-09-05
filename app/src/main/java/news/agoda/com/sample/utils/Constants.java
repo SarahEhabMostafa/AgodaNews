@@ -6,4 +6,6 @@ public class Constants {
     public static final String KEY_TITLE = "title";
     public static final String KEY_SUMMARY = "summary";
     public static final String KEY_IMAGE_URL = "imageURL";
+    public static final String EXTRA_NEWS = "news";
+    public static final String FRAGMENT_DETAILS = "fragment_details";
 }
