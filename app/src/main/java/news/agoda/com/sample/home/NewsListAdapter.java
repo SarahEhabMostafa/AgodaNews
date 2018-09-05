@@ -1,12 +1,12 @@
 package news.agoda.com.sample.home;
 
-import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -14,28 +14,58 @@ import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.DraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import news.agoda.com.sample.R;
 import news.agoda.com.sample.data.MediaEntity;
 import news.agoda.com.sample.data.NewsEntity;
-import news.agoda.com.sample.R;
 
-public class NewsListAdapter extends ArrayAdapter {
-    private static class ViewHolder {
+public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.ViewHolder> {
+    private ArrayList<NewsEntity> newsEntities;
+    private ListFragment.OnItemClickListener onItemClickListener;
+
+    class ViewHolder extends RecyclerView.ViewHolder {
         TextView newsTitle;
         DraweeView imageView;
+        LinearLayout parent;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            parent = (LinearLayout) itemView;
+            newsTitle = itemView.findViewById(R.id.news_title);
+            imageView = itemView.findViewById(R.id.news_item_image);
+        }
     }
 
-    NewsListAdapter(Context context, int resource, List objects) {
-        super(context, resource, objects);
+    public NewsListAdapter(ArrayList<NewsEntity> newsEntities,
+                           @NonNull ListFragment.OnItemClickListener onItemClickListener) {
+        this.newsEntities = newsEntities;
+        this.onItemClickListener = onItemClickListener;
+    }
+
+    @Override
+    public int getItemCount() {
+        if (newsEntities == null)
+            return 0;
+
+        return newsEntities.size();
     }
 
     @NonNull
     @Override
-    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-        NewsEntity newsEntity = (NewsEntity) getItem(position);
-        if(newsEntity == null)
-            return convertView;
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View rootView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.list_item_news, parent, false);
+        ViewHolder viewHolder = new ViewHolder(rootView);
+        return viewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        final NewsEntity newsEntity = newsEntities.get(position);
+        if (newsEntity == null)
+            return;
 
         List<MediaEntity> mediaEntityList = newsEntity.getMultimedia();
         String thumbnailURL = "";
@@ -44,21 +74,16 @@ public class NewsListAdapter extends ArrayAdapter {
             thumbnailURL = mediaEntity.getUrl();
         }
 
-        ViewHolder viewHolder;
-        if (convertView == null) {
-            viewHolder = new ViewHolder();
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.list_item_news, parent, false);
-            viewHolder.newsTitle = convertView.findViewById(R.id.news_title);
-            viewHolder.imageView = convertView.findViewById(R.id.news_item_image);
-            convertView.setTag(viewHolder);
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
-        viewHolder.newsTitle.setText(newsEntity.getTitle());
+        holder.newsTitle.setText(newsEntity.getTitle());
         DraweeController draweeController = Fresco.newDraweeControllerBuilder().setImageRequest(ImageRequest.fromUri
-                (Uri.parse(thumbnailURL))).setOldController(viewHolder.imageView.getController()).build();
-        viewHolder.imageView.setController(draweeController);
-        return convertView;
+                (Uri.parse(thumbnailURL))).setOldController(holder.imageView.getController()).build();
+        holder.imageView.setController(draweeController);
+
+        holder.parent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onItemClickListener.onItemClick(newsEntity);
+            }
+        });
     }
 }

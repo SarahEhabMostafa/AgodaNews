@@ -3,11 +3,11 @@ package news.agoda.com.sample.home;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -29,12 +29,12 @@ import news.agoda.com.sample.utils.Constants;
  * to handle interaction events.
  */
 public class ListFragment extends Fragment implements MainPresenterListener {
-    private ListView listView;
+    private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView textView;
 
     private MainPresenter mainPresenter;
-    private List<NewsEntity> newsEntityList = new ArrayList<>();
+    private ArrayList<NewsEntity> newsEntityList = new ArrayList<>();
     private NewsListAdapter adapter;
 
     private OnItemClickListener mListener;
@@ -48,31 +48,26 @@ public class ListFragment extends Fragment implements MainPresenterListener {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
 
-        listView = rootView.findViewById(android.R.id.list);
+        recyclerView = rootView.findViewById(android.R.id.list);
+        recyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+
         progressBar = rootView.findViewById(R.id.progressBar);
         textView = rootView.findViewById(R.id.textView);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                NewsEntity newsEntity = newsEntityList.get(position);
-                mListener.onItemClick(newsEntity);
-            }
-        });
-
-        adapter = new NewsListAdapter(getActivity(),
-                R.layout.list_item_news, newsEntityList);
+        adapter = new NewsListAdapter(newsEntityList, mListener);
 
         if (newsEntityList != null && !newsEntityList.isEmpty()) {
-            adapter = new NewsListAdapter(getActivity(), R.layout.list_item_news, newsEntityList);
-            listView.setAdapter(adapter);
+            adapter = new NewsListAdapter(newsEntityList, mListener);
+            recyclerView.setAdapter(adapter);
         } else if (savedInstanceState != null) {
             String newsJson = savedInstanceState.getString(Constants.EXTRA_NEWS);
             newsEntityList = new Gson().fromJson(newsJson,
                     new TypeToken<ArrayList<NewsEntity>>() {}.getType());
 
-            adapter = new NewsListAdapter(getActivity(), R.layout.list_item_news, newsEntityList);
-            listView.setAdapter(adapter);
+            adapter = new NewsListAdapter(newsEntityList, mListener);
+            recyclerView.setAdapter(adapter);
         } else {
             mainPresenter = new MainPresenter(this);
             mainPresenter.loadNews();
@@ -105,15 +100,15 @@ public class ListFragment extends Fragment implements MainPresenterListener {
 
     @Override
     public void displayNewsList(final List<NewsEntity> list) {
-        listView.setVisibility(View.VISIBLE);
-        this.newsEntityList = list;
-        adapter = new NewsListAdapter(getActivity(), R.layout.list_item_news, newsEntityList);
-        listView.setAdapter(adapter);
+        recyclerView.setVisibility(View.VISIBLE);
+        this.newsEntityList = (ArrayList<NewsEntity>) list;
+        adapter = new NewsListAdapter(newsEntityList, mListener);
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
     public void hideList() {
-        listView.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.GONE);
     }
 
     @Override
@@ -130,7 +125,6 @@ public class ListFragment extends Fragment implements MainPresenterListener {
     public void showError(String errorMessage) {
         textView.setVisibility(View.VISIBLE);
         textView.setText(errorMessage);
-        listView.setEmptyView(textView);
     }
 
     @Override
